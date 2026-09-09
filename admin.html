@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Apla Ganesha — Admin</title><link rel="stylesheet" href="admin.css"></head>
+<body>
+<header><a href="index.html">← Website</a><h1>AGG Admin</h1><button id="save">Save changes</button></header>
+<main>
+  <section><h2>Channel</h2><label>YouTube channel URL<input id="channel"></label><label>About text<textarea id="about" rows="4"></textarea></label></section>
+  <section><h2>Hero banners</h2><p class="hint">Use a local image path like <b>assets/banner1.jpg</b>, or a hosted image URL. You can add as many as you want.</p><div id="banners"></div><button class="add" onclick="addBanner()">+ Add banner</button></section>
+  <section><h2>YouTube videos</h2><p class="hint">Paste the normal YouTube URL, e.g. https://www.youtube.com/watch?v=...</p><div id="videos"></div><button class="add" onclick="addVideo()">+ Add video</button></section>
+  <section><h2>Next event</h2><label>Name<input id="eventName"></label><label>Date<input id="eventDate" type="date"></label><label>Description<textarea id="eventDescription"></textarea></label></section>
+  <section class="danger"><h2>Reset</h2><p>Restore the original demo content.</p><button onclick="resetData()">Reset demo data</button></section>
+</main>
+<script src="data.js"></script><script src="admin.js"></script></body></html>
