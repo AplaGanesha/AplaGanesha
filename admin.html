@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Apla Ganesha — Admin</title><link rel="stylesheet" href="admin.css"></head>
+<body>
+<div id="login" class="lock-screen"><div class="lock-card"><div class="lock-logo">🙏</div><p class="eyebrow">APLA GANESHA GROUP</p><h1>Admin Lock</h1><p id="lockText">Enter your admin password to continue.</p><input id="password" type="password" autocomplete="current-password" placeholder="Admin password"><button id="unlock">Unlock Admin</button><p id="setupHint" class="hint"></p><p id="loginError" class="error"></p></div></div>
+<div id="adminApp" hidden>
+<header><a href="index.html">← Website</a><h1>AGG Admin</h1><div class="header-actions"><button id="lockNow" class="secondary">Lock</button><button id="save">Save changes</button></div></header>
+<main>
+<section><h2>⚙️ Admin security</h2><p class="hint">The owner password is configured once in <b>admin-config.js</b> and works on every browser/device. Because GitHub Pages is static, this is a website lock, not true server-side security. Do not use a password you use elsewhere.</p><p class="hint">To change the owner password later, edit <b>admin-config.js</b>.</p></section>
+<section><h2>📺 Channel & social links</h2><label>YouTube channel URL<input id="channel" type="url" placeholder="https://www.youtube.com/@yourchannel"></label><label>Instagram URL<input id="instagram" type="url" placeholder="https://www.instagram.com/"></label><label>TikTok URL<input id="tiktok" type="url" placeholder="https://www.tiktok.com/@"></label><label>Facebook URL<input id="facebook" type="url" placeholder="https://www.facebook.com/"></label><label>About text<textarea id="about" rows="5"></textarea></label></section>
+<section><h2>🖼️ Hero banners</h2><p class="hint">Paste an image URL or a path such as <b>assets/banner1.jpg</b>. Add multiple banners for the automatic slider.</p><div id="banners"></div><button class="add" id="addBanner">+ Add banner</button></section>
+<section><h2>▶️ YouTube videos</h2><p class="hint">Paste a normal YouTube URL. You can now choose a <b>custom thumbnail</b> for every video. Leave it blank to use YouTube's thumbnail automatically.</p><div id="videos"></div><button class="add" id="addVideo">+ Add video</button></section>
+<section><h2>📸 Gallery</h2><p class="hint">Add photo URLs or paths. These appear in the website gallery.</p><div id="gallery"></div><button class="add" id="addGallery">+ Add photo</button></section>
+<section><h2>📅 Next event</h2><label>Name<input id="eventName"></label><label>Date<input id="eventDate" type="date"></label><label>Description<textarea id="eventDescription" rows="3"></textarea></label></section>
+<section class="danger"><h2>Reset</h2><p>Restore the original demo content and remove saved website changes.</p><button id="resetData">Reset demo data</button></section>
+</main>
+</div>
+<script src="data.js"></script><script src="admin-config.js"></script><script src="admin.js"></script></body></html>

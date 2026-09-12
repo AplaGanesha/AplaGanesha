@@ -1,0 +1,12 @@
+APLA GANESHA ADMIN PASSWORD SETUP
+
+1. Open admin-config.js.
+2. Find:
+   window.APLA_ADMIN_PASSWORD = "CHANGE-THIS-PASSWORD";
+3. Replace CHANGE-THIS-PASSWORD with the password you want.
+4. Upload admin-config.js together with the rest of the website to GitHub Pages.
+
+The same password will work on every browser/device because it is part of the website configuration.
+
+IMPORTANT:
+GitHub Pages is a static host. This is NOT real server-side authentication. Anyone who can inspect/download the website files could potentially discover the password. For true private admin security across devices, the site needs a backend/authentication service such as Supabase, Firebase, or a server.
