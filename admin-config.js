@@ -1,0 +1,1 @@
+window.APLA_ADMIN_PASSWORD = "BappaMorea26";
