@@ -1,3 +1,1 @@
-/* APLA GANESHA ADMIN PASSWORD */
-
-window.APLA_ADMIN_PASSWORD = "BappaMorea26";
+const ADMIN_EMAIL = "bablee.yash@gmail.com";

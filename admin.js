@@ -1,278 +1,293 @@
-const $ = (id) => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
-const DATA_KEY = "aplaGaneshaData";
 const SESSION_KEY = "aplaGaneshaAdminSession";
 const SESSION_MS = 30 * 60 * 1000;
 
-const DEFAULT_DATA = {
-  youtubeChannel: "https://www.youtube.com/@aplaganeshagroup",
-  instagram: "https://www.instagram.com/aplaganeshagroup/",
-  tiktok: "https://www.tiktok.com/@aplaganeshagroup",
-  facebook: "https://www.facebook.com/people/Apla-Ganesha-Group-AGG/61579401656524/",
-  about: "Apla Ganesha Group celebrates Ganesh Chaturthi, Jhakri performances and our community traditions.",
-  event: {
-    name: "",
-    date: "",
-    description: ""
-  },
-  banners: [
-    {
-      title: "Apla Ganesha Group",
-      text: "Be happy, make Bappa happy, make everyone happy. 🧡",
-      image: "assets/logo.png"
-    }
-  ],
-  videos: [],
-  gallery: []
-};
+let data = null;
 
-function cloneDefaultData() {
-  return JSON.parse(JSON.stringify(DEFAULT_DATA));
-}
 
-function getSiteData() {
-  try {
-    const saved = localStorage.getItem(DATA_KEY);
+// --------------------------------
+// SESSION
+// --------------------------------
 
-    if (!saved) {
-      return cloneDefaultData();
-    }
-
-    const parsed = JSON.parse(saved);
-
-    return {
-      ...cloneDefaultData(),
-      ...parsed,
-      event: {
-        ...DEFAULT_DATA.event,
-        ...(parsed.event || {})
-      },
-      banners: Array.isArray(parsed.banners)
-        ? parsed.banners
-        : cloneDefaultData().banners,
-      videos: Array.isArray(parsed.videos)
-        ? parsed.videos
-        : [],
-      gallery: Array.isArray(parsed.gallery)
-        ? parsed.gallery
-        : []
-    };
-
-  } catch (error) {
-    console.error("Could not load website data:", error);
-    return cloneDefaultData();
-  }
-}
-
-let data = getSiteData();
-
-function configuredPassword() {
-  return String(window.APLA_ADMIN_PASSWORD || "").trim();
-}
-
-function isUnlocked() {
-  try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-
-    if (!raw) return false;
-
-    const stamp = Number(raw);
-
-    return Number.isFinite(stamp) &&
-      Date.now() - stamp < SESSION_MS;
-
-  } catch (error) {
-    console.error("Session check failed:", error);
-    return false;
-  }
-}
-
-function unlockSession() {
+function saveSession() {
   sessionStorage.setItem(
     SESSION_KEY,
     String(Date.now())
   );
-
-  showAdmin();
 }
 
-function lockSession() {
+function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
-  location.reload();
 }
 
-function showAdmin() {
-  console.log("Admin login successful.");
+function hasSession() {
 
-  const login = $("login");
-  const adminApp = $("adminApp");
+  const raw =
+    sessionStorage.getItem(SESSION_KEY);
 
-  if (!login || !adminApp) {
-    console.error("Admin elements not found.");
-    return;
-  }
+  if (!raw) return false;
 
-  login.hidden = true;
-  login.style.display = "none";
+  const stamp = Number(raw);
 
-  adminApp.hidden = false;
-  adminApp.style.display = "block";
-
-  window.scrollTo(0, 0);
-
-  try {
-    loadForm();
-  } catch (error) {
-    console.error("Admin panel loading error:", error);
-  }
+  return (
+    Number.isFinite(stamp) &&
+    Date.now() - stamp < SESSION_MS
+  );
 }
 
-function loadForm() {
-  data = getSiteData();
 
-  $("channel").value = data.youtubeChannel || "";
-  $("instagram").value = data.instagram || "";
-  $("tiktok").value = data.tiktok || "";
-  $("facebook").value = data.facebook || "";
-  $("about").value = data.about || "";
+// --------------------------------
+// SHOW ADMIN
+// --------------------------------
 
-  $("eventName").value = data.event?.name || "";
-  $("eventDate").value = data.event?.date || "";
-  $("eventDescription").value = data.event?.description || "";
+async function showAdmin() {
+
+  $("login").hidden = true;
+  $("adminApp").hidden = false;
+
+  await loadForm();
+}
+
+
+// --------------------------------
+// LOAD DATA
+// --------------------------------
+
+async function loadForm() {
+
+  data = await getSiteData();
+
+  $("channel").value =
+    data.youtubeChannel || "";
+
+  $("instagram").value =
+    data.instagram || "";
+
+  $("tiktok").value =
+    data.tiktok || "";
+
+  $("facebook").value =
+    data.facebook || "";
+
+  $("about").value =
+    data.about || "";
+
+  $("eventName").value =
+    data.event?.name || "";
+
+  $("eventDate").value =
+    data.event?.date || "";
+
+  $("eventDescription").value =
+    data.event?.description || "";
 
   renderBanners();
   renderVideos();
   renderGallery();
 }
 
+
+// --------------------------------
+// ESCAPE HTML
+// --------------------------------
+
 function esc(value) {
+
   return String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll('"', "&quot;");
 }
+
+
+// --------------------------------
+// BANNERS
+// --------------------------------
 
 function renderBanners() {
-  const container = $("banners");
-  if (!container) return;
 
-  container.innerHTML = data.banners.map((banner, index) => `
-    <div class="item">
+  $("banners").innerHTML =
+    (data.banners || [])
+      .map((b, i) => `
 
-      <label>
-        Title
-        <input
-          data-type="bt"
-          data-i="${index}"
-          value="${esc(banner.title)}"
-        >
-      </label>
+        <div class="item">
 
-      <label>
-        Text
-        <input
-          data-type="bx"
-          data-i="${index}"
-          value="${esc(banner.text)}"
-        >
-      </label>
+          <label>
+            Title
+            <input
+              data-type="bt"
+              data-i="${i}"
+              value="${esc(b.title)}"
+            >
+          </label>
 
-      <label>
-        Image path / URL
-        <input
-          data-type="bi"
-          data-i="${index}"
-          value="${esc(banner.image)}"
-        >
-      </label>
+          <label>
+            Text
+            <input
+              data-type="bx"
+              data-i="${i}"
+              value="${esc(b.text)}"
+            >
+          </label>
 
-      <button
-        type="button"
-        class="remove"
-        data-remove-banner="${index}"
-      >
-        Remove
-      </button>
+          <label>
+            Image path / URL
+            <input
+              data-type="bi"
+              data-i="${i}"
+              value="${esc(b.image)}"
+            >
+          </label>
 
-    </div>
-  `).join("");
+          <button
+            type="button"
+            class="remove"
+            data-remove-banner="${i}"
+          >
+            Remove
+          </button>
+
+        </div>
+
+      `)
+      .join("");
 }
 
+
+// --------------------------------
+// VIDEOS
+// --------------------------------
+
+function renderVideos() {
+
+  $("videos").innerHTML =
+    (data.videos || [])
+      .map((v, i) => `
+
+        <div class="item">
+
+          <label>
+            Title
+            <input
+              data-type="vt"
+              data-i="${i}"
+              value="${esc(v.title)}"
+            >
+          </label>
+
+          <label>
+            Description
+            <input
+              data-type="vx"
+              data-i="${i}"
+              value="${esc(v.description)}"
+            >
+          </label>
+
+          <label>
+            YouTube URL
+            <input
+              data-type="vu"
+              data-i="${i}"
+              value="${esc(v.url)}"
+            >
+          </label>
+
+          <label>
+            Custom thumbnail URL / path
+            <span class="optional">(optional)</span>
+
+            <input
+              data-type="vi"
+              data-i="${i}"
+              value="${esc(v.thumbnail || "")}"
+              placeholder="https://.../thumbnail.jpg or assets/thumb.jpg"
+            >
+          </label>
+
+          <button
+            type="button"
+            class="remove"
+            data-remove-video="${i}"
+          >
+            Remove
+          </button>
+
+        </div>
+
+      `)
+      .join("");
+}
+
+
+// --------------------------------
+// GALLERY
+// --------------------------------
+
+function renderGallery() {
+
+  $("gallery").innerHTML =
+    (data.gallery || [])
+      .map((g, i) => `
+
+        <div class="item">
+
+          <label>
+            Image path / URL
+            <input
+              data-type="gi"
+              data-i="${i}"
+              value="${esc(g.image)}"
+            >
+          </label>
+
+          <label>
+            Caption
+            <input
+              data-type="gc"
+              data-i="${i}"
+              value="${esc(g.caption)}"
+            >
+          </label>
+
+          <button
+            type="button"
+            class="remove"
+            data-remove-gallery="${i}"
+          >
+            Remove
+          </button>
+
+        </div>
+
+      `)
+      .join("");
+}
+
+
+// --------------------------------
+// ADD ITEMS
+// --------------------------------
+
 function addBanner() {
+
   data.banners.push({
     title: "New banner",
-    text: "Be happy, make Bappa happy, make everyone happy. 🧡",
+    text: "Your banner text",
     image: "assets/logo.png"
   });
 
   renderBanners();
 }
 
-function renderVideos() {
-  const container = $("videos");
-  if (!container) return;
-
-  container.innerHTML = data.videos.map((video, index) => `
-    <div class="item">
-
-      <label>
-        Title
-        <input
-          data-type="vt"
-          data-i="${index}"
-          value="${esc(video.title)}"
-        >
-      </label>
-
-      <label>
-        Description
-        <input
-          data-type="vx"
-          data-i="${index}"
-          value="${esc(video.description)}"
-        >
-      </label>
-
-      <label>
-        YouTube URL
-        <input
-          data-type="vu"
-          data-i="${index}"
-          value="${esc(video.url)}"
-          placeholder="https://www.youtube.com/watch?v=..."
-        >
-      </label>
-
-      <label>
-        Custom thumbnail URL / path
-        <span class="optional">(optional)</span>
-
-        <input
-          data-type="vi"
-          data-i="${index}"
-          value="${esc(video.thumbnail || "")}"
-          placeholder="assets/thumb.jpg"
-        >
-      </label>
-
-      <button
-        type="button"
-        class="remove"
-        data-remove-video="${index}"
-      >
-        Remove
-      </button>
-
-    </div>
-  `).join("");
-}
 
 function addVideo() {
+
   data.videos.push({
     title: "New video",
-    description: "Apla Ganesha Group",
+    description: "Description",
     url: "https://www.youtube.com/",
     thumbnail: ""
   });
@@ -280,44 +295,9 @@ function addVideo() {
   renderVideos();
 }
 
-function renderGallery() {
-  const container = $("gallery");
-  if (!container) return;
-
-  container.innerHTML = data.gallery.map((photo, index) => `
-    <div class="item">
-
-      <label>
-        Image path / URL
-        <input
-          data-type="gi"
-          data-i="${index}"
-          value="${esc(photo.image)}"
-        >
-      </label>
-
-      <label>
-        Caption
-        <input
-          data-type="gc"
-          data-i="${index}"
-          value="${esc(photo.caption)}"
-        >
-      </label>
-
-      <button
-        type="button"
-        class="remove"
-        data-remove-gallery="${index}"
-      >
-        Remove
-      </button>
-
-    </div>
-  `).join("");
-}
 
 function addGallery() {
+
   data.gallery.push({
     image: "assets/logo.png",
     caption: "Apla Ganesha Group"
@@ -326,181 +306,426 @@ function addGallery() {
   renderGallery();
 }
 
+
+// --------------------------------
+// COLLECT FORM DATA
+// --------------------------------
+
 function collect() {
-  data.youtubeChannel = $("channel").value.trim();
-  data.instagram = $("instagram").value.trim();
-  data.tiktok = $("tiktok").value.trim();
-  data.facebook = $("facebook").value.trim();
-  data.about = $("about").value;
+
+  data.youtubeChannel =
+    $("channel").value.trim();
+
+  data.instagram =
+    $("instagram").value.trim();
+
+  data.tiktok =
+    $("tiktok").value.trim();
+
+  data.facebook =
+    $("facebook").value.trim();
+
+  data.about =
+    $("about").value;
 
   data.event = {
-    name: $("eventName").value,
-    date: $("eventDate").value,
-    description: $("eventDescription").value
-  };
 
-  localStorage.setItem(
-    DATA_KEY,
-    JSON.stringify(data)
-  );
+    name:
+      $("eventName").value,
+
+    date:
+      $("eventDate").value,
+
+    description:
+      $("eventDescription").value
+
+  };
 }
 
-function save() {
-  try {
-    collect();
 
-    const button = $("save");
+// --------------------------------
+// SAVE TO SUPABASE
+// --------------------------------
+
+async function save() {
+
+  collect();
+
+  const button = $("save");
+
+  button.disabled = true;
+  button.textContent = "Saving...";
+
+  try {
+
+    const {
+      data: userData,
+      error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !userData.user) {
+      throw new Error("You are not logged in.");
+    }
+
+    if (
+      ADMIN_EMAIL &&
+      userData.user.email.toLowerCase() !==
+      ADMIN_EMAIL.toLowerCase()
+    ) {
+      throw new Error(
+        "This account is not the Apla Ganesha admin account."
+      );
+    }
+
+    const {
+      error
+    } = await supabaseClient
+      .from("site_data")
+      .upsert(
+        {
+          id: 1,
+          data: data,
+          updated_at: new Date().toISOString()
+        },
+        {
+          onConflict: "id"
+        }
+      );
+
+    if (error) {
+      throw error;
+    }
 
     button.textContent = "Saved ✓";
 
     setTimeout(() => {
       button.textContent = "Save changes";
-    }, 1400);
+    }, 1500);
 
   } catch (error) {
-    console.error("Save failed:", error);
-    alert("Could not save the changes.");
+
+    console.error(error);
+
+    alert(
+      "Could not save changes.\n\n" +
+      error.message
+    );
+
+    button.textContent = "Save changes";
+
+  } finally {
+
+    button.disabled = false;
+
   }
 }
 
-document.addEventListener("input", (event) => {
-  const element = event.target;
 
-  const index = Number(element.dataset.i);
-  const type = element.dataset.type;
+// --------------------------------
+// REMOVE ITEMS
+// --------------------------------
 
-  if (Number.isNaN(index) || !type) return;
+document.addEventListener("click", e => {
+
+  const banner =
+    e.target.closest("[data-remove-banner]");
+
+  const video =
+    e.target.closest("[data-remove-video]");
+
+  const gallery =
+    e.target.closest("[data-remove-gallery]");
+
+
+  if (banner) {
+
+    data.banners.splice(
+      Number(banner.dataset.removeBanner),
+      1
+    );
+
+    if (!data.banners.length) {
+      addBanner();
+    }
+
+    renderBanners();
+  }
+
+
+  if (video) {
+
+    data.videos.splice(
+      Number(video.dataset.removeVideo),
+      1
+    );
+
+    renderVideos();
+  }
+
+
+  if (gallery) {
+
+    data.gallery.splice(
+      Number(gallery.dataset.removeGallery),
+      1
+    );
+
+    renderGallery();
+  }
+
+});
+
+
+// --------------------------------
+// LIVE FORM CHANGES
+// --------------------------------
+
+document.addEventListener("input", e => {
+
+  const i =
+    Number(e.target.dataset.i);
+
+  const type =
+    e.target.dataset.type;
+
+  if (
+    Number.isNaN(i) ||
+    !type
+  ) {
+    return;
+  }
 
   const map = {
+
     bt: ["banners", "title"],
     bx: ["banners", "text"],
     bi: ["banners", "image"],
+
     vt: ["videos", "title"],
     vx: ["videos", "description"],
     vu: ["videos", "url"],
     vi: ["videos", "thumbnail"],
+
     gi: ["gallery", "image"],
     gc: ["gallery", "caption"]
+
   };
 
   const pair = map[type];
 
   if (
     pair &&
-    data[pair[0]] &&
-    data[pair[0]][index]
+    data[pair[0]]?.[i]
   ) {
-    data[pair[0]][index][pair[1]] =
-      element.value;
+
+    data[pair[0]][i][pair[1]] =
+      e.target.value;
+
   }
+
 });
 
-document.addEventListener("click", (event) => {
-  const bannerButton =
-    event.target.closest("[data-remove-banner]");
 
-  const videoButton =
-    event.target.closest("[data-remove-video]");
+// --------------------------------
+// LOGOUT / LOCK
+// --------------------------------
 
-  const galleryButton =
-    event.target.closest("[data-remove-gallery]");
+async function lockSession() {
 
-  if (bannerButton) {
-    const index =
-      Number(bannerButton.dataset.removeBanner);
+  await supabaseClient.auth.signOut();
 
-    data.banners.splice(index, 1);
+  clearSession();
 
-    if (data.banners.length === 0) {
-      addBanner();
-    } else {
-      renderBanners();
-    }
-  }
-
-  if (videoButton) {
-    const index =
-      Number(videoButton.dataset.removeVideo);
-
-    data.videos.splice(index, 1);
-
-    renderVideos();
-  }
-
-  if (galleryButton) {
-    const index =
-      Number(galleryButton.dataset.removeGallery);
-
-    data.gallery.splice(index, 1);
-
-    renderGallery();
-  }
-});
-
-function resetData() {
-  if (confirm("Reset all saved website data?")) {
-    localStorage.removeItem(DATA_KEY);
-    location.reload();
-  }
+  location.reload();
 }
 
-function showError(message) {
-  const error = $("loginError");
 
-  if (error) {
-    error.textContent = message;
-  }
-}
+// --------------------------------
+// RESET DATA
+// --------------------------------
 
-function login() {
-  const input = $("password").value;
-  const expected = configuredPassword();
+$("resetData").onclick = async () => {
 
-  showError("");
-
-  if (!expected) {
-    showError("Admin password is not configured.");
+  if (
+    !confirm(
+      "Reset all website data to the demo content?"
+    )
+  ) {
     return;
   }
 
-  if (input === expected) {
-    $("password").value = "";
-    unlockSession();
-  } else {
-    showError("Wrong password. Try again.");
-    $("password").select();
+  data = structuredClone(DEFAULT_DATA);
+
+  await save();
+
+  loadForm();
+};
+
+
+// --------------------------------
+// LOGIN
+// --------------------------------
+
+async function login() {
+
+  const email =
+    ADMIN_EMAIL.trim();
+
+  const password =
+    $("password").value;
+
+  $("loginError").textContent = "";
+
+  if (!email) {
+
+    $("loginError").textContent =
+      "Admin email is not configured.";
+
+    return;
   }
+
+  if (!password) {
+
+    $("loginError").textContent =
+      "Enter your password.";
+
+    return;
+  }
+
+
+  const {
+    data: result,
+    error
+  } = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+
+  if (error) {
+
+    console.error(error);
+
+    $("loginError").textContent =
+      "Login failed: " + error.message;
+
+    return;
+  }
+
+
+  if (!result.user) {
+
+    $("loginError").textContent =
+      "Login failed.";
+
+    return;
+  }
+
+
+  saveSession();
+
+  $("password").value = "";
+
+  await showAdmin();
+
 }
 
-$("unlock").addEventListener("click", (event) => {
-  event.preventDefault();
-  login();
-});
 
-$("password").addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
+// --------------------------------
+// BUTTONS
+// --------------------------------
+
+$("unlock").addEventListener(
+  "click",
+  e => {
+
+    e.preventDefault();
+
     login();
+
   }
-});
+);
 
-$("password").addEventListener("input", () => {
-  showError("");
-});
 
-$("save").addEventListener("click", save);
-$("addBanner").addEventListener("click", addBanner);
-$("addVideo").addEventListener("click", addVideo);
-$("addGallery").addEventListener("click", addGallery);
-$("lockNow").addEventListener("click", lockSession);
-$("resetData").addEventListener("click", resetData);
+$("password").addEventListener(
+  "keydown",
+  e => {
+
+    if (e.key === "Enter") {
+
+      e.preventDefault();
+
+      login();
+
+    }
+
+  }
+);
+
+
+$("password").addEventListener(
+  "input",
+  () => {
+
+    $("loginError").textContent = "";
+
+  }
+);
+
+
+$("save").onclick = save;
+
+$("addBanner").onclick = addBanner;
+
+$("addVideo").onclick = addVideo;
+
+$("addGallery").onclick = addGallery;
+
+$("lockNow").onclick = lockSession;
+
 
 $("lockText").textContent =
   "Enter your Apla Ganesha admin password.";
 
 $("setupHint").textContent =
-  "The owner password is configured in admin-config.js.";
+  "Use the admin email and password created in Supabase.";
 
-if (isUnlocked()) {
-  showAdmin();
+
+// --------------------------------
+// START
+// --------------------------------
+
+async function startAdmin() {
+
+  try {
+
+    const {
+      data: sessionData
+    } = await supabaseClient.auth.getSession();
+
+    const session =
+      sessionData?.session;
+
+    if (
+      session &&
+      session.user?.email?.toLowerCase() ===
+      ADMIN_EMAIL.toLowerCase() &&
+      hasSession()
+    ) {
+
+      await showAdmin();
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Admin startup error:",
+      error
+    );
+
+  }
+
 }
+
+startAdmin();
