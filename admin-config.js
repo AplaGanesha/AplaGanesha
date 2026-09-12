@@ -1,0 +1,3 @@
+/* APLA GANESHA ADMIN PASSWORD */
+
+window.APLA_ADMIN_PASSWORD = "BappaMorea26";
